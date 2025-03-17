@@ -5,7 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.entity.Timestamped;
+import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.enums.UserRole;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 @Getter
 @Entity
@@ -29,7 +33,7 @@ public class User extends Timestamped {
         this.nickname = nickname;
     }
 
-    private User(Long id, String email, UserRole userRole, String nickname) {
+    public User(Long id, String email, UserRole userRole, String nickname) {
         this.id = id;
         this.email = email;
         this.userRole = userRole;
@@ -37,7 +41,13 @@ public class User extends Timestamped {
     }
 
     public static User fromAuthUser(AuthUser authUser) {
-        return new User(authUser.getId(), authUser.getEmail(), authUser.getUserRole(), authUser.getNickname());
+        UserRole userRole = authUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(UserRole::valueOf)
+                .findFirst()
+                .orElseThrow(() -> new InvalidRequestException("Invalid role"));
+
+        return new User(authUser.getId(), authUser.getEmail(), userRole, authUser.getNickname());
     }
 
     public void changePassword(String password) {
