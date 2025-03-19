@@ -7,6 +7,8 @@ import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
+import org.example.expert.domain.todo.dto.response.TodoWithConditionResponse;
+import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.service.TodoService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +45,17 @@ public class TodoController {
     @GetMapping("/todos/{todoId}")
     public ResponseEntity<TodoResponse> getTodo(@PathVariable long todoId) {
         return ResponseEntity.ok(todoService.getTodo(todoId));
+    }
+
+    @GetMapping("/todos/condition")
+    public ResponseEntity<Page<TodoWithConditionResponse>> getTodosWithCondition(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String nickname,
+            @RequestParam(defaultValue = "1000-01-01T00:00:00") LocalDateTime startDate,
+            @RequestParam(defaultValue = "9999-12-31T23:59:59") LocalDateTime endDate
+    ) {
+        return ResponseEntity.ok(todoService.getTodosWithCondition(page, size, title, nickname, startDate, endDate));
     }
 }
